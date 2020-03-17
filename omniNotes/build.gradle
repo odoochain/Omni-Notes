@@ -256,5 +256,10 @@ jacoco {
 tasks.withType(Test) {
     testLogging {
         events "standardOut", "started", "passed", "skipped", "failed"
+        exceptionFormat "full"
     }
+}
+
+task testAll(dependsOn: ['test', 'connectedAndroidTest']) {
+    description = "Run all tests"
 }

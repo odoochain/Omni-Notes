@@ -23,23 +23,20 @@ import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static java.util.Locale.ENGLISH;
+import static org.junit.Assert.assertFalse;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.rule.GrantPermissionRule;
 import it.feio.android.omninotes.db.DbHelper;
 import it.feio.android.omninotes.helpers.LanguageHelper;
 import it.feio.android.omninotes.utils.Constants;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 
 
 public class BaseAndroidTestCase {
-
-  private final static String DB_PATH_REGEX = ".*it\\.feio\\.android\\.omninotes.*\\/databases\\/test_omni-notes.*";
-  private final static String DB_PREFIX = "test_";
 
   protected static DbHelper dbHelper;
   protected static Context testContext;
@@ -52,23 +49,16 @@ public class BaseAndroidTestCase {
 
   @BeforeClass
   public static void setUpBeforeClass () {
-    testContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+    testContext = ApplicationProvider.getApplicationContext();
     prefs = testContext.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_MULTI_PROCESS);
     dbHelper = DbHelper.getInstance(testContext);
     prefs = testContext.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE);
-//		assertTrue("Database used for tests MUST not be the default one but prefixed by '" + DB_PREFIX + "'", dbHelper
-//				.getDatabase().getPath().matches(DB_PATH_REGEX));
-//    assertFalse("Database MUST be writable", dbHelper.getDatabase(true).isReadOnly());
-//    cleanDatabase();
+    assertFalse("Database MUST be writable", dbHelper.getDatabase(true).isReadOnly());
+    cleanDatabase();
     LanguageHelper.updateLanguage(testContext, ENGLISH.toString());
   }
 
-  @AfterClass
-  public static void tearDownAfterClass () {
-    testContext.deleteDatabase(DbHelper.getInstance().getDatabaseName());
-  }
-
-  protected static void cleanDatabase () {
+  private static void cleanDatabase () {
     dbHelper.getDatabase(true).delete(DbHelper.TABLE_NOTES, null, null);
     dbHelper.getDatabase(true).delete(DbHelper.TABLE_CATEGORY, null, null);
     dbHelper.getDatabase(true).delete(DbHelper.TABLE_ATTACHMENTS, null, null);
